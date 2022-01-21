@@ -1,5 +1,6 @@
 import paddle
 import paddle.nn as nn
+from torch import optim
 from resnet18 import ResNet18
 from dataset import get_dataset
 from dataset import get_dataloader
@@ -77,7 +78,9 @@ def main():
                                           parameters=model.parameters(),
                                           momentum=0.9,
                                           weight_decay=5e-4)
-    
+    save_freq = 50
+    test_freq =10
+
     for epoch in range(1, total_epoch+1):
         train_one_epoch(model,
                         train_dataloader,
@@ -86,7 +89,13 @@ def main():
                         epoch,
                         total_epoch)
         scheduler.step()
-        validate(model, val_dataloader, criterion)
+        # validate(model, val_dataloader, criterion)
+        
+        if epoch % test_freq == 0 or epoch == total_epoch:
+            validate(model, val_dataloader, criterion)
+        if epoch % save_freq == 0 or epoch == total_epoch:
+            paddle.save(model.state_dict(), f'./resnet18_ep{epoch}.pdparams')
+            paddle.save(optimizer.state_dict(), f'./resnet18_ep{epoch}.pdparams')
 
 
 if __name__ == "__main__":
